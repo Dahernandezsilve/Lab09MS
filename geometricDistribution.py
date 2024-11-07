@@ -1,27 +1,26 @@
-from scipy.stats import geom
-from hypothesisTest import chiSquareTest, kstest
 import numpy as np
+from scipy.stats import geom
+from hypothesisTest import chiSquareTest, kstest 
 
 def inverseTransformSampling(p, N):
     uniformRandoms = np.random.uniform(0, 1, N)
     empiricalSample = np.ceil(np.log(1 - uniformRandoms) / np.log(1 - p)).astype(int)
     return empiricalSample
 
-# Geometric Distribution Parameters
+# Parámetros de la distribución geométrica
 p = 0.5
 N = 200
 
 geometricSample = geom.rvs(p, size=N)
 inverseSample = inverseTransformSampling(p, N)
+valores_unicos = np.union1d(geometricSample, inverseSample)
+frecuencias_teorica = [np.sum(geometricSample == val) for val in valores_unicos]
+frecuencias_empirica = [np.sum(inverseSample == val) for val in valores_unicos]
 
-# Theoretical and Empirical Samples
-theoreticalSample = np.bincount(inverseSample)
-empiricalSample = np.bincount(geometricSample)
-theoreticalSample = theoreticalSample[:20]
-empiricalSample = empiricalSample[:20]
-theoreticalFrequency = theoreticalSample / 20
-empiricalFrequency = empiricalSample / 20
+print("Frecuencias teóricas:")
+print([int(val) for val in frecuencias_teorica])
+print("Frecuencias empíricas:")
+print([int(val) for val in frecuencias_empirica])
 
-chiSquareTest(theoreticalFrequency, empiricalFrequency)
-kstest(theoreticalFrequency, empiricalFrequency)
-
+chiSquareTest(frecuencias_empirica, frecuencias_teorica)
+kstest(inverseSample, geometricSample)
